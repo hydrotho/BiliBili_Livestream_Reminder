@@ -59,7 +59,8 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            7z a ${{ env.APP_NAME }}-${{ matrix.arch }}-${{ matrix.platform }}.${{ matrix.ext }} build/${{ env.APP_NAME }}.exe
+            cd build
+            7z a ../${{ env.APP_NAME }}-${{ matrix.arch }}-${{ matrix.platform }}.${{ matrix.ext }} ${{ env.APP_NAME }}.exe
           else
             tar -czvf ${{ env.APP_NAME }}-${{ matrix.arch }}-${{ matrix.platform }}.${{ matrix.ext }} -C build ${{ env.APP_NAME }}
           fi
