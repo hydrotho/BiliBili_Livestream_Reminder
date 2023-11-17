@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-import sys
 
 import requests
 import typer
@@ -131,8 +130,8 @@ def main(
     global bot_token, chat_id
 
     if not os.path.isabs(config):
-        base_path = os.path.dirname(sys.argv[0])
-        config = os.path.join(base_path, config)
+        cwd = os.getcwd()
+        config = os.path.join(cwd, config)
 
     with open(config, "r") as file:
         c = yaml.safe_load(file)
