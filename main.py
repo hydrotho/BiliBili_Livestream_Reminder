@@ -48,11 +48,11 @@ def get_user_info(uid):
 
 async def send_telegram_message(live_room_info, user_info):
     bot = Bot(bot_token)
-    caption = f"[{user_info['info']['uname']}](https://space.bilibili.com/{user_info['info']['uid']}) 正在直播\n标题：{live_room_info['title']}"
+    caption = f"[{user_info['info']['uname']}](https://space.bilibili.com/{user_info['info']['uid']}) 直播中\n标题：{live_room_info['title']}"
     keyboard = [
         [
             InlineKeyboardButton(
-                "观看直播", url=f"https://live.bilibili.com/{live_room_info['room_id']}"
+                "直播间", url=f"https://live.bilibili.com/{live_room_info['room_id']}"
             )
         ]
     ]
