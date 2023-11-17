@@ -136,9 +136,9 @@ def main(
 
     with open(config, "r") as file:
         c = yaml.safe_load(file)
-    bot_token = c["telegram_bot_token"]
-    chat_id = c["telegram_chat_id"]
-    room_ids = c["room_ids"]
+    bot_token = c["telegram-bot-token"]
+    chat_id = c["telegram-chat-id"]
+    room_ids = c["room-ids"]
 
     asyncio.run(reminder(room_ids))
 
