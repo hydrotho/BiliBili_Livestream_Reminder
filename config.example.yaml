@@ -1,4 +1,4 @@
-telegram_bot_token: <YOUR_TELEGRAM_BOT_TOKEN>
-telegram_chat_id: <YOUR_TELEGRAM_CHAT_ID>
-room_ids:
+telegram-bot-token: <YOUR_TELEGRAM_BOT_TOKEN>
+telegram-chat-id: <YOUR_TELEGRAM_CHAT_ID>
+room-ids:
   - 21987615 # 原神
