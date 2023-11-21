@@ -10,6 +10,7 @@ from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 import blivedm.blivedm as blivedm
 
 logger = logging.getLogger("BiliBili_Livestream_Reminder")
+logger.setLevel(logging.INFO)
 
 bot_token = ""
 chat_id = ""
@@ -87,12 +88,14 @@ class MyHandler(blivedm.BaseHandler):
     def add_room(self, room_id):
         self.rooms[room_id] = LiveRoom(room_id)
 
-    def _on_preparing(self, client: blivedm.BLiveClient, _):
+    def _on_preparing(self, client: blivedm.BLiveClient, command: dict):
+        logger.info("[%d] PREPARING, command=%s", client.room_id, command)
         room = self.rooms.get(client.room_id)
         if room:
             room.on_preparing()
 
-    def _on_live(self, client: blivedm.BLiveClient, _):
+    def _on_live(self, client: blivedm.BLiveClient, command: dict):
+        logger.info("[%d] LIVE, command=%s", client.room_id, command)
         room = self.rooms.get(client.room_id)
         if room:
             asyncio.create_task(room.on_live())
