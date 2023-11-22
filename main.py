@@ -11,6 +11,9 @@ import blivedm.blivedm as blivedm
 
 logger = logging.getLogger("BiliBili_Livestream_Reminder")
 logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 bot_token = ""
 chat_id = ""
