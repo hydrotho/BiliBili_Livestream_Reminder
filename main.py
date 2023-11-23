@@ -5,7 +5,10 @@ import os
 import requests
 import typer
 import yaml
+
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.constants import ParseMode
+from telegram.helpers import escape_markdown
 
 import blivedm.blivedm as blivedm
 
@@ -51,7 +54,9 @@ def get_user_info(uid):
 
 async def send_telegram_message(live_room_info, user_info):
     bot = Bot(bot_token)
-    caption = f"[{user_info['info']['uname']}](https://space.bilibili.com/{user_info['info']['uid']}) 直播中\n标题：{live_room_info['title']}"
+    uname = escape_markdown(user_info["info"]["uname"], version=2)
+    title = escape_markdown(live_room_info["title"], version=2)
+    caption = f"[{uname}](https://space.bilibili.com/{user_info['info']['uid']}) 直播中\n标题：{title}"
     keyboard = [[InlineKeyboardButton("直播间", url=f"https://live.bilibili.com/{live_room_info['room_id']}")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await bot.send_photo(
@@ -59,7 +64,7 @@ async def send_telegram_message(live_room_info, user_info):
         photo=live_room_info["user_cover"],
         caption=caption,
         reply_markup=reply_markup,
-        parse_mode="Markdown",
+        parse_mode=ParseMode.MARKDOWN_V2,
     )
 
 
