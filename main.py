@@ -6,7 +6,7 @@ import requests
 import typer
 import yaml
 
-from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from telegram.constants import ParseMode
 from telegram.helpers import escape_markdown
 
@@ -52,29 +52,17 @@ def get_user_info(uid):
     return data["data"]
 
 
-async def send_telegram_message(live_room_info, user_info):
-    bot = Bot(bot_token)
-    uname = escape_markdown(user_info["info"]["uname"], version=2)
-    title = escape_markdown(live_room_info["title"], version=2)
-    caption = f"[{uname}](https://space.bilibili.com/{user_info['info']['uid']}) 直播中\n标题：{title}"
-    keyboard = [[InlineKeyboardButton("直播间", url=f"https://live.bilibili.com/{live_room_info['room_id']}")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await bot.send_photo(
-        chat_id=chat_id,
-        photo=live_room_info["user_cover"],
-        caption=caption,
-        reply_markup=reply_markup,
-        parse_mode=ParseMode.MARKDOWN_V2,
-    )
-
-
 class LiveRoom:
-    def __init__(self, room_id):
-        self.room_id = room_id
-        self.is_live = False
+    def __init__(self, room_id: int):
+        self.room_id: int = room_id
+        self.is_live: bool = False
+        self.title: str = ""
+        self.message: Message | None = None
 
     def on_preparing(self):
         self.is_live = False
+        self.title = ""
+        self.message = None
 
     async def on_live(self):
         if self.is_live:
@@ -86,7 +74,31 @@ class LiveRoom:
         user_info = get_user_info(live_room_info["uid"])
         if user_info is None:
             return
-        await send_telegram_message(live_room_info, user_info)
+        self.title = live_room_info["title"]
+        bot = Bot(bot_token)
+        uname = escape_markdown(user_info["info"]["uname"], version=2)
+        title = escape_markdown(live_room_info["title"], version=2)
+        caption = f"[{uname}](https://space.bilibili.com/{user_info['info']['uid']}) 直播中\n标题：{title}"
+        keyboard = [[InlineKeyboardButton("直播间", url=f"https://live.bilibili.com/{live_room_info['room_id']}")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        self.message = await bot.send_photo(
+            chat_id=chat_id,
+            photo=live_room_info["user_cover"],
+            caption=caption,
+            reply_markup=reply_markup,
+            parse_mode=ParseMode.MARKDOWN_V2,
+        )
+
+    async def on_room_change(self, new_title: str):
+        if self.is_live and self.title != new_title and self.message:
+            self.title = new_title
+            old_caption = self.message.caption.split("\n")
+            new_caption = f"{old_caption[0]}\n标题：{new_title}"
+            await self.message.edit_caption(
+                caption=new_caption,
+                caption_entities=self.message.caption_entities,
+                reply_markup=self.message.reply_markup,
+            )
 
 
 class MyHandler(blivedm.BaseHandler):
@@ -108,9 +120,16 @@ class MyHandler(blivedm.BaseHandler):
         if room:
             asyncio.create_task(room.on_live())
 
+    def _on_room_change(self, client: blivedm.BLiveClient, command: dict):
+        logger.info("[%d] ROOM_CHANGE, command=%s", client.room_id, command)
+        room = self.rooms.get(client.room_id)
+        if room:
+            asyncio.create_task(room.on_room_change(command["data"]["title"]))
+
     _CMD_CALLBACK_DICT = blivedm.BaseHandler._CMD_CALLBACK_DICT.copy()
     _CMD_CALLBACK_DICT["PREPARING"] = _on_preparing
     _CMD_CALLBACK_DICT["LIVE"] = _on_live
+    _CMD_CALLBACK_DICT["ROOM_CHANGE"] = _on_room_change
 
 
 async def reminder(room_ids):
