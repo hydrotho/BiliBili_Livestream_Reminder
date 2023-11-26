@@ -84,13 +84,22 @@ class LiveRoom:
         caption = f"[{uname}](https://space.bilibili.com/{user_info['info']['uid']}) 直播中\n标题：{title}"
         keyboard = [[InlineKeyboardButton("直播间", url=f"https://live.bilibili.com/{live_room_info['room_id']}")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        self.message = await bot.send_photo(
-            chat_id=chat_id,
-            photo=live_room_info["user_cover"],
-            caption=caption,
-            reply_markup=reply_markup,
-            parse_mode=ParseMode.MARKDOWN_V2,
-        )
+        if live_room_info["user_cover"]:
+            self.message = await bot.send_photo(
+                chat_id=chat_id,
+                photo=live_room_info["user_cover"],
+                caption=caption,
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.MARKDOWN_V2,
+            )
+        else:
+            self.message = await bot.send_message(
+                chat_id=chat_id,
+                text=caption,
+                reply_markup=reply_markup,
+                parse_mode=ParseMode.MARKDOWN_V2,
+                disable_web_page_preview=True,
+            )
 
     async def on_room_change(self, new_title: str):
         if self.is_live and self.title != new_title and self.message:
