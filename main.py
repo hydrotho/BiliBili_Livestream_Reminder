@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+from typing import Optional, Dict, List
 
 import requests
 import typer
@@ -12,21 +13,21 @@ from telegram.helpers import escape_markdown
 
 import blivedm.blivedm as blivedm
 
-logger = logging.getLogger("BiliBili_Livestream_Reminder")
+logger: logging.Logger = logging.getLogger("BiliBili_Livestream_Reminder")
 logger.setLevel(logging.INFO)
-stream_handler = logging.StreamHandler()
+stream_handler: logging.StreamHandler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
 logger.addHandler(stream_handler)
 
-bot_token = ""
-chat_id = ""
+bot_token: str = ""
+chat_id: str = ""
 
-HEADERS = {
+HEADERS: Dict[str, str] = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
 }
 
 
-def get_live_room_info(room_id):
+def get_live_room_info(room_id: int) -> Optional[Dict]:
     url = f"https://api.live.bilibili.com/room/v1/Room/get_info?room_id={room_id}"
     response = requests.get(url, headers=HEADERS)
     if response.status_code != 200:
@@ -39,7 +40,7 @@ def get_live_room_info(room_id):
     return data["data"]
 
 
-def get_user_info(uid):
+def get_user_info(uid: int) -> Optional[Dict]:
     url = f"https://api.live.bilibili.com/live_user/v1/Master/info?uid={uid}"
     response = requests.get(url, headers=HEADERS)
     if response.status_code != 200:
@@ -57,7 +58,7 @@ class LiveRoom:
         self.room_id: int = room_id
         self.is_live: bool = False
         self.title: str = ""
-        self.message: Message | None = None
+        self.message: Optional[Message] = None
 
     async def on_preparing(self):
         self.is_live = False
@@ -105,36 +106,36 @@ class LiveRoom:
 
 class MyHandler(blivedm.BaseHandler):
     def __init__(self):
-        self.rooms = {}
+        self.rooms: Dict[int, LiveRoom] = {}
 
-    def add_room(self, room_id):
+    def add_room(self, room_id: int):
         self.rooms[room_id] = LiveRoom(room_id)
 
-    def _on_preparing(self, client: blivedm.BLiveClient, command: dict):
+    def _on_preparing(self, client: blivedm.BLiveClient, command: Dict):
         logger.info("[%d] PREPARING, command=%s", client.room_id, command)
         room = self.rooms.get(client.room_id)
         if room:
             asyncio.create_task(room.on_preparing())
 
-    def _on_live(self, client: blivedm.BLiveClient, command: dict):
+    def _on_live(self, client: blivedm.BLiveClient, command: Dict):
         logger.info("[%d] LIVE, command=%s", client.room_id, command)
         room = self.rooms.get(client.room_id)
         if room:
             asyncio.create_task(room.on_live())
 
-    def _on_room_change(self, client: blivedm.BLiveClient, command: dict):
+    def _on_room_change(self, client: blivedm.BLiveClient, command: Dict):
         logger.info("[%d] ROOM_CHANGE, command=%s", client.room_id, command)
         room = self.rooms.get(client.room_id)
         if room:
             asyncio.create_task(room.on_room_change(command["data"]["title"]))
 
-    _CMD_CALLBACK_DICT = blivedm.BaseHandler._CMD_CALLBACK_DICT.copy()
+    _CMD_CALLBACK_DICT: Dict[str, callable] = blivedm.BaseHandler._CMD_CALLBACK_DICT.copy()
     _CMD_CALLBACK_DICT["PREPARING"] = _on_preparing
     _CMD_CALLBACK_DICT["LIVE"] = _on_live
     _CMD_CALLBACK_DICT["ROOM_CHANGE"] = _on_room_change
 
 
-async def reminder(room_ids):
+async def reminder(room_ids: List[int]):
     handler = MyHandler()
     for room_id in room_ids:
         handler.add_room(room_id)
