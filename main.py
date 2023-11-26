@@ -59,9 +59,11 @@ class LiveRoom:
         self.title: str = ""
         self.message: Message | None = None
 
-    def on_preparing(self):
+    async def on_preparing(self):
         self.is_live = False
         self.title = ""
+        if self.message:
+            await self.message.delete()
         self.message = None
 
     async def on_live(self):
@@ -112,7 +114,7 @@ class MyHandler(blivedm.BaseHandler):
         logger.info("[%d] PREPARING, command=%s", client.room_id, command)
         room = self.rooms.get(client.room_id)
         if room:
-            room.on_preparing()
+            asyncio.create_task(room.on_preparing())
 
     def _on_live(self, client: blivedm.BLiveClient, command: dict):
         logger.info("[%d] LIVE, command=%s", client.room_id, command)
