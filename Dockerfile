@@ -11,10 +11,10 @@ rm -rf /var/lib/apt/lists/*
 EOF
 
 COPY <<EOF /etc/apt/sources.list
-deb https://opentuna.cn/ubuntu/ focal main restricted universe multiverse
-deb https://opentuna.cn/ubuntu/ focal-updates main restricted universe multiverse
-deb https://opentuna.cn/ubuntu/ focal-backports main restricted universe multiverse
-deb https://opentuna.cn/ubuntu/ focal-security main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ focal main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ focal-updates main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ focal-backports main restricted universe multiverse
+deb https://mirrors.ustc.edu.cn/ubuntu/ focal-security main restricted universe multiverse
 EOF
 
 ENV TZ=Asia/Shanghai
