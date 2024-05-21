@@ -53,7 +53,7 @@ python-telegram-bot-raw==21.1.1
     # via -r requirements.in
 pyyaml==6.0.1
     # via -r requirements.in
-requests==2.31.0
+requests==2.32.0
     # via -r requirements.in
 rich==13.7.1
     # via typer
