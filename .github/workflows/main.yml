@@ -35,10 +35,10 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Setup Python 3.10
+      - name: Setup Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Install Dependencies
@@ -49,17 +49,21 @@ jobs:
         with:
           nuitka-version: main
           script-name: main.py
-          onefile: true
+          mode: app
           output-file: ${{ env.APP_NAME }}
 
       - name: Package Binary
         shell: bash
         run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
+            tar -czvf ${{ env.APP_NAME }}-${{ matrix.arch }}-${{ matrix.platform }}.${{ matrix.ext }} -C build ${{ env.APP_NAME }}
+          elif [ "${{ matrix.os }}" = "windows-latest" ]; then
             cd build
             7z a ../${{ env.APP_NAME }}-${{ matrix.arch }}-${{ matrix.platform }}.${{ matrix.ext }} ${{ env.APP_NAME }}.exe
-          else
-            tar -czvf ${{ env.APP_NAME }}-${{ matrix.arch }}-${{ matrix.platform }}.${{ matrix.ext }} -C build ${{ env.APP_NAME }}
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            cd build
+            mv main.app ${{ env.APP_NAME }}.app
+            tar -czvf ../${{ env.APP_NAME }}-${{ matrix.arch }}-${{ matrix.platform }}.${{ matrix.ext }} ${{ env.APP_NAME }}.app
           fi
 
       - name: Upload Artifact
