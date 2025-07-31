@@ -1,71 +1,14 @@
-# syntax=docker/dockerfile:1
+# 使用官方 Python 3.12 镜像
+FROM python:3.12
 
-FROM ubuntu:focal
+# 设置工作目录
+WORKDIR /app
 
-ARG DEBIAN_FRONTEND=noninteractive
+# 复制代码到容器内
+COPY . /app
 
-RUN <<EOF
-apt-get update
-apt-get install -y ca-certificates
-rm -rf /var/lib/apt/lists/*
-EOF
+# 安装依赖（如果有requirements.txt）
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY <<EOF /etc/apt/sources.list
-deb https://mirrors.cernet.edu.cn/ubuntu/ focal main restricted universe multiverse
-deb https://mirrors.cernet.edu.cn/ubuntu/ focal-updates main restricted universe multiverse
-deb https://mirrors.cernet.edu.cn/ubuntu/ focal-backports main restricted universe multiverse
-deb http://security.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse
-EOF
-
-ENV TZ=Asia/Shanghai
-
-RUN <<EOF
-apt-get update
-apt-get install -y tzdata
-apt-get install -y locales && locale-gen en_US.UTF-8
-apt-get install -y gosu
-rm -rf /var/lib/apt/lists/*
-EOF
-
-ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
-
-# https://github.com/pyenv/pyenv/wiki#suggested-build-environment
-RUN <<EOF
-apt-get update
-apt-get install -y build-essential libssl-dev zlib1g-dev \
-    libbz2-dev libreadline-dev libsqlite3-dev curl git \
-    libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
-rm -rf /var/lib/apt/lists/*
-EOF
-
-ENV PYENV_ROOT="/usr/local/pyenv"
-ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
-ARG PYTHON_VERSION="3.12"
-# https://github.com/pyenv/pyenv/pull/2592
-# https://github.com/pyenv/pyenv/wiki#how-to-build-cpython-for-maximum-performance
-ARG PYTHON_CONFIGURE_OPTS="--disable-shared --enable-optimizations --with-lto"
-ARG PYTHON_CFLAGS="-march=native -mtune=native"
-
-RUN <<EOF
-curl https://pyenv.run | bash
-pyenv install $PYTHON_VERSION
-pyenv global $PYTHON_VERSION
-EOF
-
-RUN <<EOF
-python -m pip install --no-cache-dir --upgrade pip
-pip install --no-cache-dir nuitka
-EOF
-
-RUN <<EOF
-apt-get update
-apt-get install -y ccache patchelf
-rm -rf /var/lib/apt/lists/*
-EOF
-
-WORKDIR /code
-
-COPY docker-entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
-COPY docker-cmd.sh /usr/local/bin/
-CMD ["docker-cmd.sh"]
+# 指定容器启动时执行的命令
+CMD ["python", "main.py"]

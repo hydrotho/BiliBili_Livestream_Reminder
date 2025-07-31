@@ -1,0 +1,6 @@
+services:
+  app:
+    build: .
+    container_name: live_reminder
+    volumes:
+      - .:/app

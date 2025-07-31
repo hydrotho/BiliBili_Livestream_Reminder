@@ -62,10 +62,31 @@ class LiveRoom:
 
     async def on_preparing(self):
         self.is_live = False
-        self.title = ""
-        if self.message:
-            await self.message.delete()
-        self.message = None
+        live_room_info = get_live_room_info(self.room_id)
+        if live_room_info is None:
+            return
+        user_info = get_user_info(live_room_info["uid"])
+        if user_info is None:
+            return
+        self.title = live_room_info["title"]
+        bot = Bot(bot_token)
+        uname = escape_markdown(user_info["info"]["uname"], version=2)
+        title = escape_markdown(live_room_info["title"], version=2)
+        caption = f"[{uname}](https://space.bilibili.com/{user_info['info']['uid']}) 下播了\n标题：{title}"
+        if live_room_info["user_cover"]:
+            self.message = await bot.send_photo(
+                chat_id=chat_id,
+                photo=live_room_info["user_cover"],
+                caption=caption,
+                parse_mode=ParseMode.MARKDOWN_V2,
+            )
+        else:
+            self.message = await bot.send_message(
+                chat_id=chat_id,
+                text=caption,
+                parse_mode=ParseMode.MARKDOWN_V2,
+                disable_web_page_preview=True,
+            )
 
     async def on_live(self):
         if self.is_live:
