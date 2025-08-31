@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -11,10 +11,10 @@ rm -rf /var/lib/apt/lists/*
 EOF
 
 COPY <<EOF /etc/apt/sources.list
-deb https://mirrors.cernet.edu.cn/ubuntu/ focal main restricted universe multiverse
-deb https://mirrors.cernet.edu.cn/ubuntu/ focal-updates main restricted universe multiverse
-deb https://mirrors.cernet.edu.cn/ubuntu/ focal-backports main restricted universe multiverse
-deb http://security.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse
+deb https://mirrors.cernet.edu.cn/ubuntu/ jammy main restricted universe multiverse
+deb https://mirrors.cernet.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse
+deb https://mirrors.cernet.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse
 EOF
 
 ENV TZ=Asia/Shanghai
