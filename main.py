@@ -147,6 +147,10 @@ class MyHandler(blivedm.BaseHandler):
 async def reminder(room_ids: List[int]):
     handler = MyHandler()
     for room_id in room_ids:
+        live_room_info = get_live_room_info(room_id)
+        if live_room_info is None:
+            continue
+        room_id = live_room_info["room_id"]
         handler.add_room(room_id)
 
     clients = [blivedm.BLiveClient(room_id) for room_id in room_ids]
