@@ -12,9 +12,9 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-latest, macos-latest]
+        os: [ubuntu-22.04, windows-latest, macos-latest]
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             arch: x86_64
             platform: linux
             ext: tar.gz
@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: 'recursive'
 
@@ -55,7 +55,7 @@ jobs:
       - name: Package Binary
         shell: bash
         run: |
-          if [ "${{ matrix.os }}" = "ubuntu-20.04" ]; then
+          if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
             tar -czvf ${{ env.APP_NAME }}-${{ matrix.arch }}-${{ matrix.platform }}.${{ matrix.ext }} -C build ${{ env.APP_NAME }}
           elif [ "${{ matrix.os }}" = "windows-latest" ]; then
             cd build
@@ -89,9 +89,7 @@ jobs:
           merge-multiple: true
 
       - name: Draft Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           files: artifacts/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
